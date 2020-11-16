@@ -1,0 +1,97 @@
+
+#include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
+
+int hashFunkcia(char *a)
+{
+    int hash = 0;
+
+    while(*a++){
+        hash += (int) *a;
+    }
+    return hash;
+}
+// spracuje cisla OP: vrati pocet najdenych duplikatov.
+int vyhadzovac(char *a[], int n)
+{
+    char **pole;
+    int hashKod;
+    int velkost;
+    int flag = 0;
+    int krat = 4;
+    int novaVelkost = n*krat;
+    pole = (char**) malloc(novaVelkost*sizeof(char*));
+    for(int i = 0; i < novaVelkost; i++){
+        pole[i] = NULL;
+    }
+
+    char pomocnePole[100];
+
+    int pocetDuplikantov = 0;
+    for(int i = 0; i < n; i++){
+        flag = 0;
+        strcpy(pomocnePole, a[i]);
+        hashKod = hashFunkcia(a[i])%novaVelkost;
+        
+        velkost = strlen(a[i]);
+
+        if(pole[hashKod] ==  NULL){
+            pole[hashKod] = (char*) malloc((velkost+1)*sizeof(char));
+            strcpy(pole[hashKod], pomocnePole);
+            pole[hashKod][velkost] = '\0';
+        } else if(pole[hashKod] != NULL){
+            if(hashKod + 1 == novaVelkost){
+                novaVelkost = krat*n;
+                pole = (char**) realloc(pole, novaVelkost*sizeof(char*));
+                for(int j = hashKod; j < novaVelkost; j++){
+                    pole[j] = NULL;
+                }
+                krat *= 2;
+            }
+            while(pole[hashKod] != NULL){
+                if(strcmp(pole[hashKod], pomocnePole) == 0){
+                    pocetDuplikantov++;
+                    flag = 1;
+                    break;
+                }
+                hashKod++;
+            }
+            if(!flag){
+                pole[hashKod] = (char*) malloc((velkost+1)*sizeof(char));
+                strcpy(pole[hashKod], pomocnePole);
+                pole[hashKod][velkost] = '\0';
+            }
+        }
+    }
+    for(int i = 0; i < novaVelkost; i++){
+        free(pole[i]);
+    }
+    free(pole);
+ 
+
+
+    return pocetDuplikantov;
+}
+
+// ukazkovy test
+int main(void)
+{
+    char **a = NULL, buf[100];
+    int n = 0, len = 0;
+
+    // nacitanie retazcov
+    while (scanf("%s", buf) > 0)
+    {
+        
+        if (n == len)
+        {
+            len = len + len + (len == 0);
+            a = (char**)realloc(a, len * sizeof(char*));
+        }
+        a[n++] = strdup(buf);
+    }
+
+    printf("Pocet duplikatov: %d\n", vyhadzovac(a, n));
+    return 0;
+}
